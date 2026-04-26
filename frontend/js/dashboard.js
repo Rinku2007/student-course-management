@@ -114,20 +114,25 @@ const renderStats = async () => {
       </div>
     `;
 
-  const rows = students.slice(0, 6).map((s) => `
-    <tr>
-      <td><img class="avatar" src="${s.profileImage || "https://via.placeholder.com/50"}" alt="${s.name}"></td>
-      <td>${s.name}</td>
-      <td>${s.email}</td>
-      <td>${s.course}</td>
-      <td>${new Date(s.createdAt).toLocaleDateString()}</td>
-      <td><span class="badge ${s.status === "Inactive" ? "inactive" : ""}">${s.status}</span></td>
-      <td>
-        <button class="btn alt edit-btn" data-id="${s._id}">Edit</button>
-        <button class="btn danger delete-btn" data-id="${s._id}">Delete</button>
-      </td>
-    </tr>
-  `);
+const rows = students.slice(0, 6).map((s) => `
+  <tr>
+    <td>
+      <img class="avatar" 
+           src="${s.profileImage?.url || "/images/default.png"}" 
+           alt="${s.name}"
+           style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+    </td>
+    <td>${s.name}</td>
+    <td>${s.email}</td>
+    <td>${s.course}</td>
+    <td>${new Date(s.createdAt).toLocaleDateString()}</td>
+    <td><span class="badge ${s.status === "Inactive" ? "inactive" : ""}">${s.status}</span></td>
+    <td>
+      <button class="btn alt edit-btn" data-id="${s._id}">Edit</button>
+      <button class="btn danger delete-btn" data-id="${s._id}">Delete</button>
+    </td>
+  </tr>
+`);
   document.getElementById("recentStudentsBody").innerHTML = rows.join("");
 
   document.querySelectorAll(".edit-btn").forEach((btn) =>

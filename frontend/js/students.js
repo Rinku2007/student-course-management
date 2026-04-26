@@ -49,8 +49,7 @@ const renderStudents = (query = "", status = "All") => {
       (s) => `
     <div class="panel student-card">
       <div class="student-head">
-        <img class="avatar" src="${s.profileImage || "https://via.placeholder.com/50"}" alt="${s.name}">
-        <div>
+          <img class="avatar" src="${s.profileImage?.url || "/images/default.png"}" alt="${s.name}">        <div>
           <h4>${s.name}</h4>
           <p class="muted">${s.email}</p>
         </div>
