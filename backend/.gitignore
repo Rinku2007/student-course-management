@@ -1,0 +1,38 @@
+# 🔒 Environment variables
+.env
+backend/.env
+
+# 📦 Node modules
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# 📁 Uploaded images (VERY IMPORTANT)
+backend/uploads/
+uploads/
+
+# 🧾 Logs
+*.log
+logs/
+
+# 🧠 OS files
+.DS_Store
+Thumbs.db
+
+# 🧪 Coverage
+coverage/
+
+# ⚙️ Build files
+dist/
+build/
+
+# 🧰 IDE files
+.vscode/
+.idea/
+
+# 🗂️ Temp files
+*.tmp
+*.temp
+
+# 🔐 Secrets
+*.pem

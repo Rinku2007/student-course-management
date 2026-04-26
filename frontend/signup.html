@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup | Student Management</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="auth-wrap">
+      <section class="panel auth-card">
+        <h2>Create Admin Account</h2>
+        <form id="signupForm">
+          <input name="name" type="text" placeholder="Admin Name" required />
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password (min 6 chars)" required />
+          <button class="btn" type="submit">Sign Up</button>
+          <a class="muted" href="/login.html">Already have account? Login</a>
+        </form>
+      </section>
+    </div>
+    <script src="/js/api.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
+</html>
