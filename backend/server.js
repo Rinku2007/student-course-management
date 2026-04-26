@@ -46,3 +46,11 @@ mongoose
     console.error("MongoDB connection error:", error.message);
     process.exit(1);
   });
+app.use((err, req, res, next) => {
+  console.error("🔥 SERVER ERROR:", err);
+
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});

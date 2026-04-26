@@ -1,25 +1,40 @@
 const Student = require("../models/Student");
-const fs = require("fs");
-const path = require("path");
+const cloudinary = require("../config/cloudinary");
 
-const withImagePath = (file) => (file ? `uploads/${file.filename}` : "");
 
-exports.getStudents = async (req, res) => {
+// 🔹 GET ALL STUDENTS
+const getStudents = async (req, res) => {
   try {
     const students = await Student.find().sort({ createdAt: -1 });
     res.json({ success: true, students });
   } catch (error) {
+    console.log("❌ GET ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.createStudent = async (req, res) => {
-  try {
-    const { name, email, age, course, status } = req.body;
-    const exists = await Student.findOne({ email });
 
+// 🔹 CREATE STUDENT (FIXED)
+const createStudent = async (req, res) => {
+  try {
+    console.log("FILE:", JSON.stringify(req.file, null, 2));
+    console.log("BODY:", req.body);
+
+    const { name, email, age, course, status } = req.body;
+
+    const exists = await Student.findOne({ email });
     if (exists) {
-      return res.status(400).json({ success: false, message: "Student email already exists" });
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    // ✅ Safe image handling
+    let imageData = {};
+
+    if (req.file) {
+      imageData = {
+        url: req.file.path,
+        public_id: req.file.filename || req.file.public_id || "",
+      };
     }
 
     const student = await Student.create({
@@ -28,86 +43,88 @@ exports.createStudent = async (req, res) => {
       age,
       course,
       status,
-      profileImage: withImagePath(req.file)
+      profileImage: imageData,
     });
 
-    res.status(201).json({ success: true, message: "Student added", student });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+    res.status(201).json({ success: true, student });
+
+  } catch (err) {
+  console.error("❌ CREATE ERROR:", err);
+  res.status(500).json({
+    success: false,
+    message: err.message,
+  });
+}
 };
 
-exports.updateStudent = async (req, res) => {
+
+// 🔹 UPDATE STUDENT
+const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
+
+    const student = await Student.findById(id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
     const payload = { ...req.body };
 
-    if (req.file) payload.profileImage = withImagePath(req.file);
+    if (req.file) {
+      // delete old image
+      if (student.profileImage?.public_id) {
+        await cloudinary.uploader.destroy(student.profileImage.public_id);
+      }
 
-    const student = await Student.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
-    if (!student) {
-      return res.status(404).json({ success: false, message: "Student not found" });
+      payload.profileImage = {
+        url: req.file.path,
+        public_id: req.file.filename || req.file.public_id || "",
+      };
     }
 
-    res.json({ success: true, message: "Student updated", student });
+    const updated = await Student.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.json({ success: true, message: "Student updated", student: updated });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.log("❌ UPDATE ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
-// exports.deleteStudent = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const deleted = await Student.findByIdAndDelete(id);
-//     if (!deleted) {
-//       return res.status(404).json({ success: false, message: "Student not found" });
-//     }
 
-//     res.json({ success: true, message: "Student deleted" });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
-
-exports.deleteStudent = async (req, res) => {
+// 🔹 DELETE STUDENT
+const deleteStudent = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    // 1. Student find karo
-    const student = await Student.findById(id);
+    const student = await Student.findById(req.params.id);
 
     if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: "Student not found"
-      });
+      return res.status(404).json({ message: "Student not found" });
     }
 
-    // 2. Image delete karo
-    if (student.profileImage) {
-      const imagePath = path.join(__dirname, "..", student.profileImage);
-
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-        console.log("Image deleted:", imagePath);
-      } else {
-        console.log("Image not found:", imagePath);
-      }
+    // delete from cloudinary
+    if (student.profileImage?.public_id) {
+      await cloudinary.uploader.destroy(student.profileImage.public_id);
     }
 
-    // 3. DB se delete
-    await Student.findByIdAndDelete(id);
+    await Student.findByIdAndDelete(req.params.id);
 
-    res.json({
-      success: true,
-      message: "Student and image deleted successfully"
-    });
+    res.json({ success: true, message: "Deleted successfully" });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+  } catch (err) {
+    console.log("❌ DELETE ERROR:", err);
+    res.status(500).json({ message: err.message });
   }
+};
+
+
+// ✅ EXPORT
+module.exports = {
+  getStudents,
+  createStudent,
+  updateStudent,
+  deleteStudent,
 };

@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const studentSchema = new mongoose.Schema(
   {
     profileImage: {
-      type: String,
-      default: ""
+      url: String,
+      public_id: String,
     },
     name: {
       type: String,
